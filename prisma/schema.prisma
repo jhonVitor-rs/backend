@@ -15,7 +15,7 @@ datasource db {
 
 model Measure {
   id              String   @id @default(uuid())
-  custumerCode    String
+  customerCode    String
   measureDatetime DateTime
   measureType     String
   measureValue    Float?
