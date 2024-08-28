@@ -18,8 +18,8 @@ export class MeasuresController {
     return 'Hello form measure';
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateMeasureDto: UpdateMeasureDto) {
-  //   return this.measuresService.update(id, updateMeasureDto);
-  // }
+  @Patch()
+  update(@Body() updateMeasureDto: UpdateMeasureDto) {
+    return this.measuresService.update(id, updateMeasureDto);
+  }
 }

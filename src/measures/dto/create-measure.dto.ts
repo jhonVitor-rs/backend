@@ -16,8 +16,9 @@ export class CreateMeasureDto {
   )
   measure_datetime: Date;
 
+  @IsString({ message: 'O campo measure_type é obrigatório' })
   @IsEnum(['WATER', 'GAS'], {
-    message: 'O tipo de leitura deve ser "WATER" ou "GAS".',
+    message: 'O tipo de leitura deve ser WATER ou GAS.',
   })
   measure_type: 'WATER' | 'GAS';
 }
