@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateMeasureDto } from './dto/create-measure.dto';
 import { UpdateMeasureDto } from './dto/update-measure.dto';
@@ -63,11 +64,82 @@ export class MeasuresService {
     };
   }
 
-  findAll() {
-    return `This action returns all measures`;
+  async findAll(customer_code: string, measure_type?: string) {
+    const validateMeasureType = ['WATER', 'GAS'];
+    if (
+      measure_type &&
+      !validateMeasureType.includes(measure_type.toUpperCase())
+    ) {
+      throw new BadRequestException({
+        error_code: 'INVALID_TYPE',
+        error_description: 'Tipo de medição não permitido',
+      });
+    }
+
+    const measure = await this.prisma.measure.findMany({
+      where: {
+        customerCode: customer_code,
+        AND: [
+          {
+            measureType: {
+              contains: measure_type.toUpperCase(),
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+    });
+
+    if (measure.length <= 0) {
+      throw new NotFoundException({
+        error_code: 'MEASURES_NOT_FOUND',
+        error_description: 'Nenhuma leitura encontrada',
+      });
+    } else {
+      return {
+        custumer_code: customer_code,
+        measures: measure.map((m) => ({
+          measure_uuid: m.id,
+          measure_datetime: m.measureDatetime,
+          measure_type: m.measureType,
+          has_confirmed: m.hasConfirmed,
+          image_url: m.imageUrl,
+        })),
+      };
+    }
   }
 
-  update(id: number, updateMeasureDto: UpdateMeasureDto) {
-    return `This action updates a #${id} measure`;
+  async update(updateMeasureDto: UpdateMeasureDto) {
+    const { measure_uuid, confirmed_value } = updateMeasureDto;
+
+    const measure = await this.prisma.measure.findUnique({
+      where: { id: measure_uuid },
+    });
+
+    if (!measure) {
+      throw new NotFoundException({
+        error_code: 'MEASURE_NOT_FOUND',
+        error_description: 'Leitura do mes já realizada',
+      });
+    }
+
+    if (measure.hasConfirmed) {
+      throw new ConflictException({
+        error_code: 'CONFIRMATION_DUPLICATE',
+        error_description: 'Leitura do mês ja confirmada',
+      });
+    }
+
+    await this.prisma.measure.update({
+      where: { id: measure_uuid },
+      data: {
+        measureValue: confirmed_value,
+        hasConfirmed: true,
+      },
+    });
+
+    return {
+      success: true,
+    };
   }
 }

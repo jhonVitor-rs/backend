@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { MeasuresService } from './measures.service';
 import { CreateMeasureDto } from './dto/create-measure.dto';
 import { UpdateMeasureDto } from './dto/update-measure.dto';
@@ -9,17 +17,19 @@ export class MeasuresController {
 
   @Post()
   async create(@Body() createMeasureDto: CreateMeasureDto) {
-    return this.measuresService.create(createMeasureDto);
+    return await this.measuresService.create(createMeasureDto);
   }
 
-  @Get()
-  findAll() {
-    // return this.measuresService.findAll(id);
-    return 'Hello form measure';
+  @Get(':id/list')
+  async findAll(
+    @Param('id') id: string,
+    @Query('measure_type') measure_type?: 'WATER' | 'GAS',
+  ) {
+    return await this.measuresService.findAll(id, measure_type);
   }
 
   @Patch()
-  update(@Body() updateMeasureDto: UpdateMeasureDto) {
-    return this.measuresService.update(id, updateMeasureDto);
+  async update(@Body() updateMeasureDto: UpdateMeasureDto) {
+    return await this.measuresService.update(updateMeasureDto);
   }
 }
