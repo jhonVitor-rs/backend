@@ -11,7 +11,7 @@ import { MeasuresService } from './measures.service';
 import { CreateMeasureDto } from './dto/create-measure.dto';
 import { UpdateMeasureDto } from './dto/update-measure.dto';
 
-@Controller('measures')
+@Controller()
 export class MeasuresController {
   constructor(private readonly measuresService: MeasuresService) {}
 

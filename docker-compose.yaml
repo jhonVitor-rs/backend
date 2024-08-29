@@ -5,11 +5,26 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db:/var/lib/pstgresql/data
+      - db:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=measures
+
+  nestjs:
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/home/node/app
+      - /home/node/app/node_modules
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/measures
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - db
+    # command: /bin/sh -c "npx prisma migrate deploy && npm run start:dev"
+    command: /bin/sh -c "npx prisma migrate deploy && npm run build && npm run start:prod"
 
 volumes:
   db:

@@ -1,73 +1,97 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Descrição
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Projeto desenvolvido com nest, postgres sql e com a api do google gemini.
+Consiste em um projeto desenvolvido como o intuito de ler uma imagem de medição de gas ou água e retornar o valor da medição, junto com um url temporário da imagem.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Instalação
 
-## Description
+Não e preciso instalar nada para poder rodar a aplicação, apenas certifique-se de ter o docker instalado em sua maquiná, para mais detalhes da instalação do mesmo consulte a [documentação do docker](https://www.docker.com/).
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
+Após o docker instaldo baixa o código com a cli do git com o seguinte comando:
 
 ```bash
-$ npm install
+$ git clone https://github.com/jhonVitor-rs/backend.git
 ```
 
-## Running the app
+Agora basta entrar dentro da pasta com o comando:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+$ cd backend/
 ```
 
-## Test
+E rodar o comando:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+$ docker compose up
 ```
 
-## Support
+Aguarde algusn minutos ate o container subir, em uma primeira tentativa e provavel que demore um pouco ate o mesmo baixar as imagens para os containers postgres e node.
+Assim que identificar a seguinte frase em seu terminal:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+$ nestjs-1  | application listening on port http://localhost:3000
+```
 
-## Stay in touch
+Sua aplicação subiu com sucesso
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Acessando endpoints
 
-## License
+A aplicação possui três endpoints.
 
-Nest is [MIT licensed](LICENSE).
+- O primeiro, uma porta que aceita requisições POST para criação de novas medições disponivel em:
+  -- http://localhost:3000
+  Ela espera os seguintes argumentos no seu body:
+
+  ```json
+    {
+      "image": "base64",
+      "customer_code": "string",
+      "measure_datetime": "datetime",
+      "measure_type": "WATER" ou "GAS"
+    }
+  ```
+
+  Ela possui um tempo de resposta longo devido a sua conexão com a api do google gemini, mas se bem sucedida sua requisição voce deve ter uma resposta semelhante a isto:
+
+  ```json
+    {
+      "image_url": "string",
+      "measure_value": integer,
+      "measure_uuid": "string"
+    }
+  ```
+
+- A segunda uma requisição do tipo GET disponivel em:
+  -- http://localhost:3000/:customer_code/list?measure_type=water
+  Ela espera um customer_code como parametro, que seria o id do usuário que registrou a medição, e e possivel enviar um measure_type podendo ser 'water' ou 'gas' para filtrar os resultados, mas este e opicional. Se bem sucedida sua requisição voce deve ter um resultado semelhante a:
+
+  ```json
+    {
+      "customer_code": "string",
+      "measures": [
+        {
+          "measure_uuid": "string",
+          "measure_datetime": "string",
+          "measure_type": "string",
+          "has_confirmed": boolean,
+          "image_url": "string",
+        }
+      ]
+    }
+  ```
+
+- A terceira e uma requisição do tipo PATCH para confirmar se o valor da leitura está correta, ela está disponivel em:
+  -- http://localhost:3000
+  Ela espera um body com os seguites campos:
+  ```json
+    {
+      "measure_uuid": "string",
+      "comfirmed_value": integer,
+    }
+  ```
+  Se bem sucedida você tera uma resposta semelhante a:
+  ```json
+  {
+    "success": true
+  }
+  ```
