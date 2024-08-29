@@ -14,11 +14,11 @@ datasource db {
 }
 
 model Measure {
-  id              String   @id @default(uuid())
-  customerCode    String
-  measureDatetime DateTime
-  measureType     String
-  measureValue    Float?
-  imageUrl        String?
-  hasConfirmed    Boolean  @default(false)
+  id               String   @id @default(uuid())
+  customer_code    String
+  measure_datetime DateTime
+  measure_type     String
+  measure_value    Int?
+  image_url        String?
+  has_confirmed    Boolean  @default(false)
 }

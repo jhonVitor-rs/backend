@@ -11,6 +11,15 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       exceptionFactory(errors: ValidationError[]) {
+        // Lançamento do erro personalizado caso haja um erro com os parametros passados no body
+        // {
+        //   "error_code": "INVALID_DATA",
+        //   "error_description": {
+        //     "field": [
+        //       "error_type"
+        //     ]
+        //   }
+        // }
         throw new BadRequestException({
           error_code: 'INVALID_DATA',
           error_description: errors.reduce((acc, err) => {

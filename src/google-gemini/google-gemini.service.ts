@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/server';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,6 +15,7 @@ export class GoogleGeminiService {
     this.fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
   }
 
+  // Função para upload de arquivos para a API do Google Gemini
   async uploadImage(imageBase64: string) {
     try {
       const tempFilePath = await this.base64ToTempFile(imageBase64);
@@ -23,23 +24,22 @@ export class GoogleGeminiService {
         displayName: 'Upload Image',
       });
 
-      const resutl = await this.getMeasureValue(
-        uploadResponse.file.mimeType,
-        uploadResponse.file.uri,
-      );
-
       await fs.promises.unlink(tempFilePath);
       return {
-        measure_value: parseFloat(resutl.replace(',', '.')),
+        mime_type: uploadResponse.file.mimeType,
         image_url: uploadResponse.file.uri,
       };
     } catch (error) {
       // Tratamento de erro
       console.error(error);
-      throw new Error('Erro ao processar a imagem com a API Gemini');
+      throw new InternalServerErrorException({
+        error_code: 'INTERNAL_SERVER_ERROR',
+        error_description: 'Erro ao fazer upload da imagem',
+      });
     }
   }
 
+  // Converção de base64 para uma imagem .jpeg
   private async base64ToTempFile(image: string) {
     const buffer = Buffer.from(image, 'base64');
     const tempFilePath = path.join(__dirname, `temp-${uuidv4()}.jpeg`);
@@ -47,7 +47,8 @@ export class GoogleGeminiService {
     return tempFilePath;
   }
 
-  private async getMeasureValue(mimeType: string, fileUri: string) {
+  // Recuperação da descrição da imagem
+  async getMeasureValue(mimeType: string, fileUri: string) {
     try {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
       const resutl = await model.generateContent([
@@ -60,10 +61,11 @@ export class GoogleGeminiService {
         { text: 'Qual o valor númérico da medição nesta imagem?' },
       ]);
 
-      return resutl.response.text().match(/\d+([.,]\d+)?/)[0];
+      return parseInt(resutl.response.text().match(/\d+([.,]\d+)?/)[0]);
     } catch (error) {
-      throw new BadRequestException({
-        error_code: 'INVALID_DATA',
+      console.error(error);
+      throw new InternalServerErrorException({
+        error_code: 'INTERNAL_SERVER_ERROR',
         error_description: 'Erro ao gerar a medição com base na imagem',
       });
     }
