@@ -202,7 +202,7 @@ export class MeasuresService {
       };
     } catch (error) {
       if (
-        error instanceof BadRequestException ||
+        error instanceof ConflictException ||
         error instanceof NotFoundException
       ) {
         throw error; // Se for um erro conhecido apenas retorna ele
