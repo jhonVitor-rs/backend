@@ -39,19 +39,20 @@ Sua aplicação subiu com sucesso
 A aplicação possui três endpoints.
 
 - O primeiro, uma porta que aceita requisições POST para criação de novas medições disponivel em:
-  -- http://localhost:3000
-  Ela espera os seguintes argumentos no seu body:
+
+  - http://localhost:3000
+  - Ela espera os seguintes argumentos no seu body:
 
   ```json
     {
       "image": "base64",
       "customer_code": "string",
       "measure_datetime": "datetime",
-      "measure_type": "WATER" ou "GAS"
+      "measure_type": "WATER" | "GAS"
     }
   ```
 
-  Ela possui um tempo de resposta longo devido a sua conexão com a api do google gemini, mas se bem sucedida sua requisição voce deve ter uma resposta semelhante a isto:
+  - Ela possui um tempo de resposta longo devido a sua conexão com a api do google gemini, mas se bem sucedida sua requisição voce deve ter uma resposta semelhante a isto:
 
   ```json
     {
@@ -62,8 +63,9 @@ A aplicação possui três endpoints.
   ```
 
 - A segunda uma requisição do tipo GET disponivel em:
-  -- http://localhost:3000/:customer_code/list?measure_type=water
-  Ela espera um customer_code como parametro, que seria o id do usuário que registrou a medição, e e possivel enviar um measure_type podendo ser 'water' ou 'gas' para filtrar os resultados, mas este e opicional. Se bem sucedida sua requisição voce deve ter um resultado semelhante a:
+
+  - http://localhost:3000/:customer_code/list?measure_type=water
+  - Ela espera um customer_code como parametro, que seria o id do usuário que registrou a medição, e e possivel enviar um measure_type podendo ser 'water' ou 'gas' para filtrar os resultados, mas este e opicional. Se bem sucedida sua requisição voce deve ter um resultado semelhante a:
 
   ```json
     {
@@ -81,15 +83,15 @@ A aplicação possui três endpoints.
   ```
 
 - A terceira e uma requisição do tipo PATCH para confirmar se o valor da leitura está correta, ela está disponivel em:
-  -- http://localhost:3000
-  Ela espera um body com os seguites campos:
+  - http://localhost:3000
+  - Ela espera um body com os seguites campos:
   ```json
     {
       "measure_uuid": "string",
       "comfirmed_value": integer,
     }
   ```
-  Se bem sucedida você tera uma resposta semelhante a:
+  - Se bem sucedida você tera uma resposta semelhante a:
   ```json
   {
     "success": true
